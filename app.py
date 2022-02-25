@@ -1,4 +1,5 @@
 import os
+from turtle import color
 # import MySQLdb
 import cloudinary
 import cloudinary.uploader
@@ -78,34 +79,26 @@ def logout():
 #agregar nuevo Producto
 @app.route('/nuevoProducto', methods=['POST'])
 def nuevoProducto():
-# #     # try:
-        content = request.get_json()
-        print("-----------------", content, "----------------")
-
-        aux = content.get('nombre')
-        print("*******************************")
-        url = uploadFile(request.files['file'])
-        print('************esta es la URL'+url)
-        print("*******************************")
+    try:
+        imagen = request.form['url']
+        nombre = request.form['nombre']
+        descripcion = request.form['descripcion']
+        talla = request.form['talla']
+        precio = request.form['precio']
+        categoria = request.form['categoria']
+        cantidad = request.form['cantidad']
+        color = request.form['color']
+        tallaje = request.form['tallaje']
         cursor=db.connection.cursor()
-        print("ssssssssssssssss", request.json['nombre'])
-        # sql = f"""INSERT INTO productos(imagenes,nombre) 
-        # VALUES  ('{url}','{request.json['nombre']}')"""
-        sql = f"""INSERT INTO productos(imagenes,nombre,descripcion,talla,precio,
-        categoria,cantidad,logotipo,tallaje) VALUES  ('{url}','{request.json['nombre']}','{request.json['descripcion']}',
-        '{request.json['talla']}','{request.json['precio']}','{request.json['categoria']}','{request.json['cantidad']}',
-        '{request.json['logotipo']}','{request.json['tallaje']}')"""
+        listaProductos = []
+        sql = f"""INSERT INTO productos(imagenes,nombre,descripcion,talla,precio,categoria,cantidad,color,tallaje)
+        VALUES  ('{imagen}','{nombre}','{descripcion}','{talla}','{precio}','{categoria}','{cantidad}','{color}','{tallaje}')"""
         cursor.execute(sql)
         db.connection.commit()
         return jsonify({"Mensaje": "Producto registrado"})
-#     # except Exception as ex:
-#     #     return jsonify({"Mensaje": "Error"})
+    except Exception as ex:
+        return jsonify({"Mensaje": "Error"})
 
-# @app.route('/imagen',methods=['POST'])
-# def enviarImagen():
-#     print((request.form['data']))
-#     print((request.form['file']))
-#     return ({"data":"buenas"})
 
 @app.route('/upload', methods=['POST'])
 def uploadFile(url):
