@@ -24,6 +24,12 @@ CORS(app)
 
 #Inicializar app, ejecutar mediante sentencias sql (select, insert...)
 db=MySQL(app)
+app.config["MYSQL_HOST" ]= 'boappj44csi2jovaxmpy-mysql.services.clever-cloud.com'
+app.config["MYSQL_HOST"]= 'boappj44csi2jovaxmpy-mysql.services.clever-cloud.com'
+app.config["MYSQL_USER"]= 'un7wcwcqtgb6cod2'
+app.config["MYSQL_PASSWORD"]= 'e4HMan3wybvY2gD8S2X4'
+app.config["MYSQL_DB"]= 'boappj44csi2jovaxmpy'
+app.config["MYSQL_PORT"]= 3306
 login_manager_app=LoginManager(app)
 @login_manager_app.user_loader
 def load_user(cedula):
@@ -154,6 +160,6 @@ def eliminarProducto(codigo):
 
 
 if __name__ == '__main__':
-    app.config.from_object(config['development'])
+    # app.config.from_object(config['development'])
     app.run()
 
