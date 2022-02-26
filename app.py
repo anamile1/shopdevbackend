@@ -1,6 +1,4 @@
 import os
-from turtle import color
-# import MySQLdb
 import cloudinary
 import cloudinary.uploader
 from flask import Flask, jsonify, request
@@ -32,9 +30,6 @@ def load_user(cedula):
     return ModelUser.get_by_cedula(db,cedula)
 
 
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
-
-
 #ruta raiz
 @app.route('/')
 def index():
@@ -43,19 +38,19 @@ def index():
 
 @app.route('/registro', methods=['POST'])
 def registroUsuario():
-    try:
+    # try:
         cursor=db.connection.cursor()
         sql = """INSERT INTO clientes (cedula,nombres,telefono,departamento,ciudad,
-        direccion,correo,contraseña) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}',
-        '{7}')""".format(request.json['cedula'], request.json['nombres'],
+        direccion,correo,contraseña,rol) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}',
+        '{7}',('1'))""".format(request.json['cedula'], request.json['nombres'],
         request.json['telefono'], request.json['departamento'],
         request.json['ciudad'], request.json['direccion'], request.json['correo'],
         request.json['contraseña'])
         cursor.execute(sql)
         db.connection.commit()
         return jsonify({"Mensaje": "Usuario registrado"})
-    except Exception as ex:
-        return jsonify({"Mensaje": "Error"})
+    # except Exception as ex:
+    #     return jsonify({"Mensaje": "Error"})
 
 
 #ruta inicio de sesión
@@ -90,7 +85,6 @@ def nuevoProducto():
         color = request.form['color']
         tallaje = request.form['tallaje']
         cursor=db.connection.cursor()
-        listaProductos = []
         sql = f"""INSERT INTO productos(imagenes,nombre,descripcion,talla,precio,categoria,cantidad,color,tallaje)
         VALUES  ('{imagen}','{nombre}','{descripcion}','{talla}','{precio}','{categoria}','{cantidad}','{color}','{tallaje}')"""
         cursor.execute(sql)
@@ -124,14 +118,14 @@ def listarProductos():
         sql=  'SELECT * FROM productos'
         cursor.execute(sql)
         row = cursor.fetchall()
-        productos = []
-        print(row)
-        for fila in row:
-            producto = {'codigo':fila[0],'imagenes':fila[1],'nombre':fila[2],
-            'descripcion':fila[3],'talla':fila[4],'precio':[5],'categoria':[6],
-            'cantidad':fila[7],'logotipo':fila[8],'tallaje':[9]}
-            productos.append(producto)
-        return jsonify({'productos':productos,"Mensaje": "Producto modificado"})
+        # productos = []
+        # print(row)
+        # for fila in row:
+        #     producto = {'codigo':fila[0],'imagenes':fila[1],'nombre':fila[2],
+        #     'descripcion':fila[3],'talla':fila[4],'precio':[5],'categoria':['6'],
+        #     'cantidad':fila[7],'color':fila[8],'tallaje':[9]}
+        #     productos.append(producto)
+        return jsonify({"Mensaje": "Producto modificado"})
     # except Exception as ex:
     #     return jsonify({"Mensaje": "Error"})
 
@@ -140,7 +134,7 @@ def modificarProducto(codigo):
     cursor=db.connection.cursor()
     sql = f"""UPDATE productos SET imagenes = '{request.json['imagenes']}',nombre = '{request.json['nombre']}',
     descripcion = '{request.json['descripcion']}', talla = '{request.json['talla']}',precio = '{request.json['precio']}',
-    categoria = '{request.json['categoria']}',cantidad = '{request.json['cantidad']}',logotipo = '{request.json['logotipo']}',
+    categoria = '{request.json['categoria']}',cantidad = '{request.json['cantidad']}',color = '{request.json['color']}',
     tallaje = '{request.json['tallaje']}' WHERE codigo = '{codigo}'"""
     cursor.execute(sql)
     db.connection.commit()
