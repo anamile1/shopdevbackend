@@ -125,13 +125,7 @@ def listarProductos():
         cursor.execute(sql)
         row = cursor.fetchall()
         productos = []
-        print(row)
-        for fila in row:
-            producto = {'codigo':fila[0],'imagenes':fila[1],'nombre':fila[2],
-            'descripcion':fila[3],'talla':fila[4],'precio':[5],'categoria':[6],
-            'cantidad':fila[7],'color':fila[8],'tallaje':[9]}
-            productos.append(producto)
-        return jsonify({"Mensaje": productos})
+        return jsonify({"Mensaje": row})
     # except Exception as ex:
     #     return jsonify({"Mensaje": "Error"})
 
