@@ -44,7 +44,7 @@ def index():
 
 @app.route('/registro', methods=['POST'])
 def registroUsuario():
-    # try:
+    try:
         cursor=db.connection.cursor()
         sql = """INSERT INTO clientes (cedula,nombres,telefono,departamento,ciudad,
         direccion,correo,contraseña,rol) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}',
@@ -55,8 +55,8 @@ def registroUsuario():
         cursor.execute(sql)
         db.connection.commit()
         return jsonify({"Mensaje": "Usuario registrado"})
-    # except Exception as ex:
-    #     return jsonify({"Mensaje": "Error"})
+    except Exception as ex:
+        return jsonify({"Mensaje": "Error"})
 
 
 #ruta inicio de sesión
@@ -80,7 +80,7 @@ def logout():
 #agregar nuevo Producto
 @app.route('/nuevoProducto', methods=['POST'])
 def nuevoProducto():
-    try:
+    # try:
         imagen = request.form['url']
         nombre = request.form['nombre']
         descripcion = request.form['descripcion']
@@ -96,8 +96,8 @@ def nuevoProducto():
         cursor.execute(sql)
         db.connection.commit()
         return jsonify({"Mensaje": "Producto registrado"})
-    except Exception as ex:
-        return jsonify({"Mensaje": "Error"})
+    # except Exception as ex:
+    #     return jsonify({"Mensaje": "Error"})
 
 
 @app.route('/upload', methods=['POST'])
@@ -119,15 +119,14 @@ def uploadFile(url):
 
 @app.route('/listarProductos', methods=['GET'])
 def listarProductos():
-    # try:
+    try:
         cursor=db.connection.cursor()
         sql=  'SELECT * FROM productos'
         cursor.execute(sql)
         row = cursor.fetchall()
-        productos = []
         return jsonify({"Mensaje": row})
-    # except Exception as ex:
-    #     return jsonify({"Mensaje": "Error"})
+    except Exception as ex:
+        return jsonify({"Mensaje": "Error"})
 
 @app.route('/modificarProducto/<codigo>',methods=['PUT'])
 def modificarProducto(codigo):
@@ -149,7 +148,6 @@ def eliminarProducto(codigo):
     cursor.execute(sql)
     db.connection.commit()
     return jsonify({"Mensaje": "Producto eliminado"})
-
 
 
 
