@@ -140,8 +140,6 @@ def modificarProducto(codigo):
     db.connection.commit()
     return jsonify({"Mensaje": "Producto modificado"})
 
-
-
 @app.route('/eliminarProducto/<codigo>',methods=['DELETE'])
 def eliminarProducto(codigo):
     cursor=db.connection.cursor()
@@ -149,6 +147,15 @@ def eliminarProducto(codigo):
     cursor.execute(sql)
     db.connection.commit()
     return jsonify({"Mensaje": "Producto eliminado"})
+
+#FiltroS categoria
+# @app.route('/filtrarCamiseta')
+# def filtrarCamiseta():
+#     cursor=db.connection.cursor()
+#     sql = ('SELECT * FROM productos where categoria like '{categoria}')
+#     cursor.execute(sql)
+#     db.connection.commit()
+#     return jsonify
 
 
 
