@@ -78,7 +78,7 @@ def login():
 def listarCliente():
     # try:
         cursor=db.connection.cursor()
-        sql=  'SELECT nombre,telefono,departamento,ciudad,direccion FROM clientes'
+        sql=  'SELECT nombres,telefono,departamento,ciudad,direccion FROM clientes'
         cursor.execute(sql)
         row = cursor.fetchall()
         return jsonify({"Mensaje": row})
