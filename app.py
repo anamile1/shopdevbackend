@@ -46,7 +46,7 @@ def index():
 
 @app.route('/registro', methods=['POST'])
 def registroUsuario():
-    # try:
+    try:
         cursor=db.connection.cursor()
         sql = """INSERT INTO clientes (cedula,nombres,telefono,departamento,ciudad,
         direccion,correo,contraseña,rol) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}',
@@ -57,8 +57,8 @@ def registroUsuario():
         cursor.execute(sql)
         db.connection.commit()
         return jsonify({"Mensaje": "Usuario registrado"})
-    # except Exception as ex:
-    #     return jsonify({"Mensaje": "Error"})
+    except Exception as ex:
+        return jsonify({"Mensaje": "Error"})
 
 
 #ruta inicio de sesión
@@ -76,14 +76,14 @@ def login():
 #listar y editar datos de usuario 
 @app.route('/listarCliente', methods=['GET'])
 def listarCliente():
-    # try:
+    try:
         cursor=db.connection.cursor()
         sql=  'SELECT nombres,telefono,departamento,ciudad,direccion FROM clientes'
         cursor.execute(sql)
         row = cursor.fetchall()
         return jsonify({"Mensaje": row})
-    # except Exception as ex:
-    #     return jsonify({"Mensaje": "Error"})
+    except Exception as ex:
+        return jsonify({"Mensaje": "Error"})
 
 @app.route('/modificarCliente/<cedula>',methods=['PUT'])
 def modificarCliente(cedula):
@@ -105,7 +105,7 @@ def logout():
 #agregar nuevo Producto
 @app.route('/nuevoProducto', methods=['POST'])
 def nuevoProducto():
-    # try:
+    try:
         imagen = request.form['imagen']
         nombre = request.form['nombre']
         descripcion = request.form['descripcion']
@@ -121,14 +121,13 @@ def nuevoProducto():
         cursor.execute(sql)
         db.connection.commit()
         return jsonify({"Mensaje": "Producto registrado"})
-    # except Exception as ex:
-    #     return jsonify({"Mensaje": "Error"})
+    except Exception as ex:
+        return jsonify({"Mensaje": "Error"})
 
 
 @app.route('/upload', methods=['POST'])
 def uploadFile(url):
     app.logger.info('in upload route')
-
     cloudinary.config(cloud_name = os.getenv('CLOUD_NAME'),
     api_key = os.getenv('API_KEY'),
     api_secret = os.getenv('API_SECRET'))
@@ -184,15 +183,50 @@ def homeProductos():
         return jsonify({"Mensaje": "Error"})
 
 #FiltroS categoria
-# @app.route('/filtrarCamiseta')
-# def filtrarCamiseta():
-#     cursor=db.connection.cursor()
-#     sql = ('SELECT * FROM productos where categoria like '{categoria}')
-#     cursor.execute(sql)
-#     db.connection.commit()
-#     return jsonify
+@app.route('/filtrarCamiseta', methods=['GET'])
+def filtrarCamiseta():
+    cursor=db.connection.cursor()
+    sql = ("SELECT * FROM productos WHERE categoria = 'Camiseta'")
+    cursor.execute(sql)
+    row = cursor.fetchall()
+    db.connection.commit()
+    return jsonify(row)
 
+@app.route('/filtrarBuzo', methods=['GET'])
+def filtrarBuzo():
+    cursor=db.connection.cursor()
+    sql = ("SELECT * FROM productos WHERE categoria = 'Buzo'")
+    cursor.execute(sql)
+    row = cursor.fetchall()
+    db.connection.commit()
+    return jsonify(row)
 
+@app.route('/filtrarGorra', methods=['GET'])
+def filtrarGorra():
+    cursor=db.connection.cursor()
+    sql = ("SELECT * FROM productos WHERE categoria = 'Gorra'")
+    cursor.execute(sql)
+    row = cursor.fetchall()
+    db.connection.commit()
+    return jsonify(row)
+
+@app.route('/filtrarVaso', methods=['GET'])
+def filtrarVaso():
+    cursor=db.connection.cursor()
+    sql = ("SELECT * FROM productos WHERE categoria = 'Vaso'")
+    cursor.execute(sql)
+    row = cursor.fetchall()
+    db.connection.commit()
+    return jsonify(row)
+
+@app.route('/filtrarBotella', methods=['GET'])
+def filtrarBotella():
+    cursor=db.connection.cursor()
+    sql = ("SELECT * FROM productos WHERE categoria = 'Botella'")
+    cursor.execute(sql)
+    row = cursor.fetchall()
+    db.connection.commit()
+    return jsonify(row)
 
 
 if __name__ == '__main__':
