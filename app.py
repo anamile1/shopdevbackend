@@ -62,7 +62,7 @@ def registroUsuario():
         return jsonify({"Mensaje": "Error"})
 
 #ruta inicio de sesión
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['POST'])
 def login():
     #petición a URL
     if request.method == 'POST':
