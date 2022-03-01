@@ -22,6 +22,8 @@ app=Flask(__name__)
 app=Flask(__name__)
 CORS(app)
 
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
+
 
 #Inicializar app, ejecutar mediante sentencias sql (select, insert...)
 db=MySQL(app)
@@ -36,7 +38,6 @@ login_manager_app=LoginManager(app)
 @login_manager_app.user_loader
 def load_user(cedula):
     return ModelUser.get_by_cedula(db,cedula)
-
 
 #ruta raiz
 @app.route('/')
@@ -60,7 +61,6 @@ def registroUsuario():
     except Exception as ex:
         return jsonify({"Mensaje": "Error"})
 
-
 #ruta inicio de sesión
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -71,7 +71,6 @@ def login():
         return logged_user
     else:
         return jsonify({"Mensaje": "Datos invalidos"})
-
 
 #listar y editar datos de usuario 
 @app.route('/listarCliente', methods=['GET'])
