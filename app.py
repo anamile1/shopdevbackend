@@ -72,6 +72,19 @@ def login():
     else:
         return jsonify({"Mensaje": "Datos invalidos"})
 
+
+#listar y editar datos de usuario 
+@app.route('/listarCliente', methods=['GET'])
+def listarCliente():
+    # try:
+        cursor=db.connection.cursor()
+        sql=  'SELECT nombre,telefono,departamento,ciudad,direccion FROM clientes'
+        cursor.execute(sql)
+        row = cursor.fetchall()
+        return jsonify({"Mensaje": row})
+    # except Exception as ex:
+    #     return jsonify({"Mensaje": "Error"})
+
 @app.route('/modificarCliente/<cedula>',methods=['PUT'])
 def modificarCliente(cedula):
     cursor=db.connection.cursor()
@@ -81,18 +94,6 @@ def modificarCliente(cedula):
     cursor.execute(sql)
     db.connection.commit()
     return jsonify({"Mensaje": "Cliente modificado"})
-
-#listar y editar datos de usuario 
-@app.route('/listarCliente', methods=['GET'])
-def listarCliente():
-    try:
-        cursor=db.connection.cursor()
-        sql=  'SELECT nombre,telefono,departamento,ciudad,direccion FROM clientes'
-        cursor.execute(sql)
-        row = cursor.fetchall()
-        return jsonify({"Mensaje": row})
-    except Exception as ex:
-        return jsonify({"Mensaje": "Error"})
 
 #cierre de sesión
 @app.route('/logout')
