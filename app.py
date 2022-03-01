@@ -74,8 +74,8 @@ def logout():
 #agregar nuevo Producto
 @app.route('/nuevoProducto', methods=['POST'])
 def nuevoProducto():
-    try:
-        imagen = request.form['url']
+    # try:
+        imagen = request.form['imagen']
         nombre = request.form['nombre']
         descripcion = request.form['descripcion']
         talla = request.form['talla']
@@ -90,8 +90,8 @@ def nuevoProducto():
         cursor.execute(sql)
         db.connection.commit()
         return jsonify({"Mensaje": "Producto registrado"})
-    except Exception as ex:
-        return jsonify({"Mensaje": "Error"})
+    # except Exception as ex:
+    #     return jsonify({"Mensaje": "Error"})
 
 
 @app.route('/upload', methods=['POST'])
