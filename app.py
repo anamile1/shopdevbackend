@@ -229,6 +229,93 @@ def filtrarBotella():
     return jsonify(row)
 
 
+#seccion de gestion del carrito = listar - seleccionar unidad - delete - edit - resgistrar - subTotal
+@app.route('/carrito', methods=['GET']) #lista
+def detallesCarrito():
+    #en esta ruta deplagare la informacion inicial que va a mostrar el carrito
+    try: 
+        cursor=db.connection.cursor()
+        sql="SELECT C.id_detallesfac, C.factura, C.producto, C.cantidad, C.precioUni, P.imagenes, P.nombre, P.descripcion, P.talla, P.precio, P.categoria FROM detallesfac C, productos P WHERE C.producto = P.codigo"
+        cursor.execute(sql)
+        datos=cursor.fetchall()
+        carrito=[]
+        for fila in datos:
+            consultaCarrito={'id_detallesfac':fila[0], 'factura':fila[1], 'producto':fila[2], 'cantidad':fila[3], 'precioUni':fila[4]}
+            carrito.append(consultaCarrito)
+        #confirmacion de consulta
+        return jsonify({'Lista de':consultaCarrito, 'mensaje': "Carrito listado."})
+    except Exception as ex:
+        #mostrar el error
+        return jsonify({'mensaje':str(ex)})
+
+@app.route('/carrito/<id_detallesfac>', methods=["GET"])
+def detalleProductoCarrito(id_detallesfac):
+    #en esta ruta desplegare una cosulta aun producto seleccionado del carrito
+    try:
+        cursor=db.connection.cursor()
+        sql = "SELECT id_detallesfac, factura, producto, cantidad, precioUni FROM detallesfac WHERE id_detallesfac ='{0}'".format(id_detallesfac)
+        cursor.execute(sql)
+        datos=cursor.fetchone()
+        if datos != None:
+            consultaUnitaria={'id_detallesfac':datos[0], 'factura':datos[1], 'producto':datos[2], 'cantidad':datos[3], 'precioUni':datos[4]}
+            #confirmacion de consulta
+            return jsonify({'Producto':consultaUnitaria, 'mensaje': "producto encontrado."})
+        else:
+            return jsonify({'mensaje':"Error producto no encontrado en el carrito"})
+    except Exception as ex:
+        #mostrar el error
+        return jsonify({'mensaje':str(ex)})
+
+@app.route('/carrito', methods=['POST']) 
+def ingresarProductoCarrito():
+    #en esta ruta podre ingresar un producto mas al carrito
+    try:
+        cursor=db.connection.cursor()
+        sql="""INSERT INTO detallesfac (id_detallesfac, factura, producto, cantidad, precioUni) VALUES ('{}','{}', '{}', '{}', '{}')""".format(request.json['id_detallesfac'], request.json['factura'], request.json['producto'],request.json['cantidad'],request.json['precioUni'])
+        cursor.execute(sql)
+        db.connection.commit()
+        return jsonify({'mensaje':"Producto ingresado al carrito"})
+    except Exception as ex:
+        #mostrar  el error
+        return jsonify({'mensaje':str(ex)})
+
+@app.route('/carrito/<id_detallesfac>', methods=['DELETE'])
+def eliminarProductoCarrito(id_detallesfac):
+    try:
+        cursor=db.connection.cursor()
+        sql = "DELETE FROM detallesfac WHERE id_detallesfac ='{0}'".format(id_detallesfac)
+        cursor.execute(sql)
+        db.connection.commit()  # Confirma la acción de eliminación.
+        return jsonify({'mensaje': "Producto eliminado.", 'exito': True})
+    except Exception as ex:
+        return jsonify({'mensaje':str(ex)})
+
+
+@app.route('/carrito', methods=['PUT'])
+def actualizar_cantidad():
+    #en esta funcion puedo actualizar la cantidad del producto del carrito
+    try:
+        cursor=db.connection.cursor()
+        sql = "UPDATE detallesfac SET cantidad = '{}' WHERE id_detallesfac = '{}'".format(request.json['cantidad'], request.json['id_detallesfac'])
+        cursor.execute(sql)
+        db.connection.commit()  # Confirma la acción de actualización.
+        return jsonify({'mensaje': "Producto actualizado."})
+    except Exception as ex:
+            return jsonify({'mensaje':str(ex)})
+
+@app.route("/carrito/subTotal", methods=["GET"])
+def totalSubTotal():
+    try: 
+        cursor=db.connection.cursor()
+        sql="SELECT sum(cantidad * precioUni) FROM detallesfac"
+        cursor.execute(sql)
+        datos=cursor.fetchall()
+        #confirmacion de consulta
+        return jsonify({'subTotal':datos, 'mensaje': "este es el subTotal."})
+    except Exception as ex:
+        #mostrar el error
+        return jsonify({'mensaje':str(ex)})
+
 if __name__ == '__main__':
     app.config.from_object(config['development'])
     app.run()
