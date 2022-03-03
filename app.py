@@ -73,13 +73,13 @@ def login():
         return jsonify({"Mensaje": "Datos invalidos"})
 
 #listar y editar datos de usuario 
-@app.route('/listarCliente', methods=['GET'])
-def listarCliente():
+@app.route('/listarCliente/<cedula>', methods=['GET'])
+def listarCliente(cedula):
     try:
         cursor=db.connection.cursor()
-        sql=  'SELECT nombres,telefono,departamento,ciudad,direccion FROM clientes'
+        sql=  "SELECT nombres,telefono,departamento,ciudad,direccion FROM clientes WHERE cedula ='{}'".format(cedula)
         cursor.execute(sql)
-        row = cursor.fetchall()
+        row = cursor.fetchone()
         return jsonify({"Mensaje": row})
     except Exception as ex:
         return jsonify({"Mensaje": "Error"})
@@ -104,24 +104,26 @@ def logout():
 #agregar nuevo Producto
 @app.route('/nuevoProducto', methods=['POST'])
 def nuevoProducto():
-    try:
-        imagen = request.form['imagen']
-        nombre = request.form['nombre']
-        descripcion = request.form['descripcion']
-        talla = request.form['talla']
-        precio = request.form['precio']
-        categoria = request.form['categoria']
-        cantidad = request.form['cantidad']
-        color = request.form['color']
-        tallaje = request.form['tallaje']
-        cursor=db.connection.cursor()
-        sql = f"""INSERT INTO productos(imagenes,nombre,descripcion,talla,precio,categoria,cantidad,color,tallaje)
-        VALUES  ('{imagen}','{nombre}','{descripcion}','{talla}','{precio}','{categoria}','{cantidad}','{color}','{tallaje}')"""
-        cursor.execute(sql)
-        db.connection.commit()
-        return jsonify({"Mensaje": "Producto registrado"})
-    except Exception as ex:
-        return jsonify({"Mensaje": "Error"})
+    # try:
+    imagen = request.files['imagen']
+    nombre = request.form['nombre']
+    descripcion = request.form['descripcion']
+    talla = request.form['talla']
+    precio = request.form['precio']
+    categoria = request.form['categoria']
+    cantidad = request.form['cantidad']
+    color = request.form['color']
+    tallaje = request.form['tallaje']
+    cursor=db.connection.cursor()
+    file = uploadFile(imagen)
+    sql = f"""INSERT INTO productos(imagenes,nombre,descripcion,talla,precio,categoria,cantidad,color,tallaje)
+    VALUES  ('{file}','{nombre}','{descripcion}','{talla}','{precio}','{categoria}','{cantidad}','{color}','{tallaje}')"""
+    # cursor.execute(sql)
+    print(sql)
+    # db.connection.commit()
+    return jsonify({"Mensaje": "Producto registrado"})
+    # except Exception as ex:
+    #     return jsonify({"Mensaje": ex})
 
 
 @app.route('/upload', methods=['POST'])
@@ -138,15 +140,16 @@ def uploadFile(url):
             uploadResult =cloudinary.uploader.upload(fileToUpload)
             app.logger.info('uploadResult')
             print(uploadResult)
+            print(url)
             return uploadResult['url']
 
-@app.route('/listarProductos', methods=['GET'])
-def listarProductos():
+@app.route('/listarProductos/<codigo>', methods=['GET'])
+def listarProductos(codigo):
     try:
         cursor=db.connection.cursor()
-        sql=  'SELECT * FROM productos'
+        sql=  "SELECT * FROM productos where codigo='{}'".format(codigo)
         cursor.execute(sql)
-        row = cursor.fetchall()
+        row = cursor.fetchone()
         return jsonify({"Mensaje": row})
     except Exception as ex:
         return jsonify({"Mensaje": "Error"})
