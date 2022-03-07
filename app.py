@@ -11,8 +11,6 @@ from dotenv import load_dotenv
 from datetime import timedelta
 from werkzeug.security import check_password_hash, generate_password_hash
 
-
-
 load_dotenv()
 
 #Instancia
@@ -129,51 +127,52 @@ def modificarCliente(cedula):
 #cierre de sesión
 @app.route('/logout')
 def logout():
-    logout_user()
+    if 'correo' in session:
+        session.pop('correo', None)
     return jsonify({"Mensaje": "Cerró sesión exitosamente"})
 
 #CRUD productos
 #agregar nuevo Producto
 @app.route('/nuevoProducto', methods=['POST'])
 def nuevoProducto():
-    # try:
-    imagen = request.files['imagen']
-    nombre = request.form['nombre']
-    descripcion = request.form['descripcion']
-    talla = request.form['talla']
-    precio = request.form['precio']
-    categoria = request.form['categoria']
-    cantidad = request.form['cantidad']
-    color = request.form['color']
-    tallaje = request.form['tallaje']
-    cursor=db.connection.cursor()
-    file = uploadFile(imagen)
-    sql = f"""INSERT INTO productos(imagenes,nombre,descripcion,talla,precio,categoria,cantidad,color,tallaje)
-    VALUES  ('{file}','{nombre}','{descripcion}','{talla}','{precio}','{categoria}','{cantidad}','{color}','{tallaje}')"""
-    # cursor.execute(sql)
-    print(sql)
-    # db.connection.commit()
-    return jsonify({"Mensaje": "Producto registrado"})
-    # except Exception as ex:
-    #     return jsonify({"Mensaje": ex})
+    try:
+        imagen = request.files['imagen']
+        nombre = request.form['nombre']
+        descripcion = request.form['descripcion']
+        talla = request.form['talla']
+        precio = request.form['precio']
+        categoria = request.form['categoria']
+        cantidad = request.form['cantidad']
+        color = request.form['color']
+        tallaje = request.form['tallaje']
+        cursor=db.connection.cursor()
+        file = uploadFile(imagen)
+        sql = f"""INSERT INTO productos(imagenes,nombre,descripcion,talla,precio,categoria,cantidad,color,tallaje)
+        VALUES  ('{file}','{nombre}','{descripcion}','{talla}','{precio}','{categoria}','{cantidad}','{color}','{tallaje}')"""
+        cursor.execute(sql)
+        db.connection.commit()
+        return jsonify({"Mensaje": "Producto registrado"})
+    except Exception as ex:
+        return jsonify({"Mensaje": ex})
 
 
 @app.route('/upload', methods=['POST'])
 def uploadFile(url):
-    app.logger.info('in upload route')
-    cloudinary.config(cloud_name = os.getenv('CLOUD_NAME'),
-    api_key = os.getenv('API_KEY'),
-    api_secret = os.getenv('API_SECRET'))
-    uploadResult = None
-    if request.method == 'POST':
-        fileToUpload = url
-        app.logger.info('fileToUpload')
-        if fileToUpload:
-            uploadResult =cloudinary.uploader.upload(fileToUpload)
-            app.logger.info('uploadResult')
-            print(uploadResult)
-            print(url)
-            return uploadResult['url']
+    try:
+        app.logger.info('in upload route')
+        cloudinary.config(cloud_name = os.getenv('CLOUD_NAME'),
+        api_key = os.getenv('API_KEY'),
+        api_secret = os.getenv('API_SECRET'))
+        uploadResult = None
+        if request.method == 'POST':
+            fileToUpload = url
+            app.logger.info('fileToUpload')
+            if fileToUpload:
+                uploadResult =cloudinary.uploader.upload(fileToUpload)
+                app.logger.info('uploadResult')
+                return uploadResult['url']
+    except Exception as ex:
+        return jsonify({"Mensaje": "Error"})
 
 @app.route('/listarProductos/<codigo>', methods=['GET'])
 def listarProductos(codigo):
@@ -188,22 +187,28 @@ def listarProductos(codigo):
 
 @app.route('/modificarProducto/<codigo>',methods=['PUT'])
 def modificarProducto(codigo):
-    cursor=db.connection.cursor()
-    sql = f"""UPDATE productos SET imagenes = '{request.json['imagenes']}',nombre = '{request.json['nombre']}',
-    descripcion = '{request.json['descripcion']}', talla = '{request.json['talla']}',precio = '{request.json['precio']}',
-    categoria = '{request.json['categoria']}',cantidad = '{request.json['cantidad']}',color = '{request.json['color']}',
-    tallaje = '{request.json['tallaje']}' WHERE codigo = '{codigo}'"""
-    cursor.execute(sql)
-    db.connection.commit()
-    return jsonify({"Mensaje": "Producto modificado"})
+    try:
+        cursor=db.connection.cursor()
+        sql = f"""UPDATE productos SET imagenes = '{request.json['imagenes']}',nombre = '{request.json['nombre']}',
+        descripcion = '{request.json['descripcion']}', talla = '{request.json['talla']}',precio = '{request.json['precio']}',
+        categoria = '{request.json['categoria']}',cantidad = '{request.json['cantidad']}',color = '{request.json['color']}',
+        tallaje = '{request.json['tallaje']}' WHERE codigo = '{codigo}'"""
+        cursor.execute(sql)
+        db.connection.commit()
+        return jsonify({"Mensaje": "Producto modificado"})
+    except Exception as ex:
+        return jsonify({"Mensaje": "Error"})
 
 @app.route('/eliminarProducto/<codigo>',methods=['DELETE'])
 def eliminarProducto(codigo):
-    cursor=db.connection.cursor()
-    sql = ('DELETE FROM productos where codigo = {0}'.format(codigo))
-    cursor.execute(sql)
-    db.connection.commit()
-    return jsonify({"Mensaje": "Producto eliminado"})
+    try:
+        cursor=db.connection.cursor()
+        sql = ('DELETE FROM productos where codigo = {0}'.format(codigo))
+        cursor.execute(sql)
+        db.connection.commit()
+        return jsonify({"Mensaje": "Producto eliminado"})
+    except Exception as ex:
+        return jsonify({"Mensaje": "Error"})
 
 @app.route('/homeProductos', methods=['GET'])
 def homeProductos():
@@ -219,136 +224,71 @@ def homeProductos():
 #FiltroS categoria
 @app.route('/filtrarCamiseta', methods=['GET'])
 def filtrarCamiseta():
-    cursor=db.connection.cursor()
-    sql = ("SELECT * FROM productos WHERE categoria = 'Camiseta'")
-    cursor.execute(sql)
-    row = cursor.fetchall()
-    db.connection.commit()
-    return jsonify(row)
+    try:
+        cursor=db.connection.cursor()
+        sql = ("SELECT * FROM productos WHERE categoria = 'Camiseta'")
+        cursor.execute(sql)
+        row = cursor.fetchall()
+        db.connection.commit()
+        return jsonify(row)
+    except Exception as ex:
+        return jsonify({"Mensaje": "Error"})
 
 @app.route('/filtrarBuzo', methods=['GET'])
 def filtrarBuzo():
-    cursor=db.connection.cursor()
-    sql = ("SELECT * FROM productos WHERE categoria = 'Buzo'")
-    cursor.execute(sql)
-    row = cursor.fetchall()
-    db.connection.commit()
-    return jsonify(row)
+    try:
+        cursor=db.connection.cursor()
+        sql = ("SELECT * FROM productos WHERE categoria = 'Buzo'")
+        cursor.execute(sql)
+        row = cursor.fetchall()
+        db.connection.commit()
+        return jsonify(row)
+    except Exception as ex:
+        return jsonify({"Mensaje": "Error"})
 
 @app.route('/filtrarGorra', methods=['GET'])
 def filtrarGorra():
-    cursor=db.connection.cursor()
-    sql = ("SELECT * FROM productos WHERE categoria = 'Gorra'")
-    cursor.execute(sql)
-    row = cursor.fetchall()
-    db.connection.commit()
-    return jsonify(row)
+    try:
+        cursor=db.connection.cursor()
+        sql = ("SELECT * FROM productos WHERE categoria = 'Gorra'")
+        cursor.execute(sql)
+        row = cursor.fetchall()
+        db.connection.commit()
+        return jsonify(row)
+    except Exception as ex:
+        return jsonify({"Mensaje": "Error"})
 
 @app.route('/filtrarVaso', methods=['GET'])
 def filtrarVaso():
-    cursor=db.connection.cursor()
-    sql = ("SELECT * FROM productos WHERE categoria = 'Vaso'")
-    cursor.execute(sql)
-    row = cursor.fetchall()
-    db.connection.commit()
-    return jsonify(row)
+    try:
+        cursor=db.connection.cursor()
+        sql = ("SELECT * FROM productos WHERE categoria = 'Vaso'")
+        cursor.execute(sql)
+        row = cursor.fetchall()
+        db.connection.commit()
+        return jsonify(row)
+    except Exception as ex:
+        return jsonify({"Mensaje": "Error"})
 
 @app.route('/filtrarBotella', methods=['GET'])
 def filtrarBotella():
-    cursor=db.connection.cursor()
-    sql = ("SELECT * FROM productos WHERE categoria = 'Botella'")
-    cursor.execute(sql)
-    row = cursor.fetchall()
-    db.connection.commit()
-    return jsonify(row)
-
-
-#seccion de gestion del carrito = listar - seleccionar unidad - delete - edit - resgistrar - subTotal
-@app.route('/carrito', methods=['GET']) #lista
-def detallesCarrito():
-    #en esta ruta deplagare la informacion inicial que va a mostrar el carrito
     try:
         cursor=db.connection.cursor()
-        sql="SELECT C.id_detallesfac, C.factura, C.producto, C.cantidad, C.precioUni, P.imagenes, P.nombre, P.descripcion, P.talla, P.precio, P.categoria FROM detallesfac C, productos P WHERE C.producto = P.codigo"
+        sql = ("SELECT * FROM productos WHERE categoria = 'Botella'")
         cursor.execute(sql)
-        datos=cursor.fetchall()
-        carrito=[]
-        for fila in datos:
-            consultaCarrito={'id_detallesfac':fila[0], 'factura':fila[1], 'producto':fila[2], 'cantidad':fila[3], 'precioUni':fila[4]}
-            carrito.append(consultaCarrito)
-        #confirmacion de consulta
-        return jsonify({'Lista de':consultaCarrito, 'mensaje': "Carrito listado."})
-    except Exception as ex:
-        #mostrar el error
-        return jsonify({'mensaje':str(ex)})
-
-@app.route('/carrito/<id_detallesfac>', methods=["GET"])
-def detalleProductoCarrito(id_detallesfac):
-    #en esta ruta desplegare una cosulta aun producto seleccionado del carrito
-    try:
-        cursor=db.connection.cursor()
-        sql = "SELECT id_detallesfac, factura, producto, cantidad, precioUni FROM detallesfac WHERE id_detallesfac ='{0}'".format(id_detallesfac)
-        cursor.execute(sql)
-        datos=cursor.fetchone()
-        if datos != None:
-            consultaUnitaria={'id_detallesfac':datos[0], 'factura':datos[1], 'producto':datos[2], 'cantidad':datos[3], 'precioUni':datos[4]}
-            #confirmacion de consulta
-            return jsonify({'Producto':consultaUnitaria, 'mensaje': "producto encontrado."})
-        else:
-            return jsonify({'mensaje':"Error producto no encontrado en el carrito"})
-    except Exception as ex:
-        #mostrar el error
-        return jsonify({'mensaje':str(ex)})
-
-@app.route('/carrito', methods=['POST'])
-def ingresarProductoCarrito():
-    #en esta ruta podre ingresar un producto mas al carrito
-    try:
-        cursor=db.connection.cursor()
-        sql="""INSERT INTO detallesfac (id_detallesfac, factura, producto, cantidad, precioUni) VALUES ('{}','{}', '{}', '{}', '{}')""".format(request.json['id_detallesfac'], request.json['factura'], request.json['producto'],request.json['cantidad'],request.json['precioUni'])
-        cursor.execute(sql)
+        row = cursor.fetchall()
         db.connection.commit()
-        return jsonify({'mensaje':"Producto ingresado al carrito"})
+        return jsonify(row)
     except Exception as ex:
-        #mostrar  el error
-        return jsonify({'mensaje':str(ex)})
-
-@app.route('/carrito/<id_detallesfac>', methods=['DELETE'])
-def eliminarProductoCarrito(id_detallesfac):
-    try:
-        cursor=db.connection.cursor()
-        sql = "DELETE FROM detallesfac WHERE id_detallesfac ='{0}'".format(id_detallesfac)
-        cursor.execute(sql)
-        db.connection.commit()  # Confirma la acción de eliminación.
-        return jsonify({'mensaje': "Producto eliminado.", 'exito': True})
-    except Exception as ex:
-        return jsonify({'mensaje':str(ex)})
+        return jsonify({"Mensaje": "Error"})
 
 
-@app.route('/carrito', methods=['PUT'])
-def actualizar_cantidad():
-    #en esta funcion puedo actualizar la cantidad del producto del carrito
-    try:
-        cursor=db.connection.cursor()
-        sql = "UPDATE detallesfac SET cantidad = '{}' WHERE id_detallesfac = '{}'".format(request.json['cantidad'], request.json['id_detallesfac'])
-        cursor.execute(sql)
-        db.connection.commit()  # Confirma la acción de actualización.
-        return jsonify({'mensaje': "Producto actualizado."})
-    except Exception as ex:
-            return jsonify({'mensaje':str(ex)})
 
-@app.route("/carrito/subTotal", methods=["GET"])
-def totalSubTotal():
-    try:
-        cursor=db.connection.cursor()
-        sql="SELECT sum(cantidad * precioUni) FROM detallesfac"
-        cursor.execute(sql)
-        datos=cursor.fetchall()
-        #confirmacion de consulta
-        return jsonify({'subTotal':datos, 'mensaje': "este es el subTotal."})
-    except Exception as ex:
-        #mostrar el error
-        return jsonify({'mensaje':str(ex)})
+
+
+
+
+
 
 if __name__ == '__main__':
     app.config.from_object(config['development'])
