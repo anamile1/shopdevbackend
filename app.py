@@ -5,19 +5,13 @@ import cloudinary.uploader
 from flask import Flask, jsonify, request, session
 from flask_mysqldb import MySQL
 from config import config
-from flask_login import LoginManager, login_user,logout_user,login_required
-from flask_cors import CORS, cross_origin
+from flask_login import logout_user
+from flask_cors import CORS
 from dotenv import load_dotenv
 from datetime import timedelta
 from werkzeug.security import check_password_hash, generate_password_hash
 
 
-
-#Models:
-# from models.ModelUser import ModelUser
-
-# #Entities:
-# from models.entities.User import User
 
 load_dotenv()
 
@@ -26,7 +20,7 @@ app=Flask(__name__)
 app=Flask(__name__)
 CORS(app)
 
-cors = CORS(app, resources={r"/*": {"origins": "*"}})
+# cors = CORS(app, resources={r"/*": {"origins": "*"}})
 app.config['SECRET_KEY'] = 'B!1w8NAt1T^%kvhUI*S^'
 app.config['PERMANENT_SESSION_LIFETIME'] =  timedelta(minutes=10)
 
@@ -39,15 +33,11 @@ app.config["MYSQL_PASSWORD"]= 'e4HMan3wybvY2gD8S2X4'
 app.config["MYSQL_DB"]= 'boappj44csi2jovaxmpy'
 app.config["MYSQL_PORT"]= 3306
 
-# login_manager_app=LoginManager(app)
-# @login_manager_app.user_loader
-# def load_user(cedula):
-#     return ModelUser.get_by_cedula(db,cedula)
 
 #ruta raiz
-# @app.route('/')
-# def index():
-#     return jsonify({"mensaje": "SHOPDEV"})
+@app.route('/')
+def index():
+    return jsonify({"mensaje": "SHOPDEV"})
     #redirección al login
 
 @app.route('/registro', methods=['POST'])
@@ -68,8 +58,7 @@ def registroUsuario():
         return jsonify({"Mensaje": "Error"})
 
 #ruta inicio de sesión
-# @app.route('/login', methods=['POST'])
-# def login():
+
 
 # @app.route('/')
 # def home():
@@ -87,18 +76,11 @@ def registroUsuario():
 def login():
     _correo = request.json['correo']
     _contraseña = request.json['contraseña']
-    print(_correo,_contraseña)
-    # validate the received values
     if _correo and _contraseña:
-        #check user exists
-        print('*************',_correo,_contraseña)
         cursor=db.connection.cursor()
-        # sql = "SELECT * FROM clientes WHERE correo = %s"
         sql="""SELECT cedula,correo,contraseña,rol FROM clientes WHERE correo = '{}'""".format(_correo) #comprueba si el correo existe
         cursor.execute(sql)
         row = cursor.fetchone()
-        print('+++++++++++++++++++++++',sql)
-        print(row)
         if row is not None:
             cedula = row[0]
             correo = row[1]
@@ -107,33 +89,20 @@ def login():
         else:
             print("no existe el correo y/o la contraseña")
         if row:
-            print(row,'----------')
-            print(contraseña,_contraseña,'++++++++++++++++++++++++++++++++')
-            print(check_password_hash(contraseña, _contraseña))
             if check_password_hash(contraseña, _contraseña):
                 session['correo'] = correo
                 cursor.close()
-                # return jsonify({'message' : 'You are logged in successfully'})
                 return jsonify(row)
             else:
                 print(contraseña,_contraseña)
-                resp = jsonify({'message' : 'Contraseña no valida'})
+                resp = jsonify({'Mensaje' : 'Contraseña no valida'})
                 resp.status_code = 400
                 return resp
     else:
-        resp = jsonify({'message' : 'Datos invalidos'})
+        resp = jsonify({'Mensaje' : 'Datos invalidos'})
         resp.status_code = 400
         return resp
 
-# @app.route('/login', methods=['POST'])
-# def login():
-    #petición a URL
-    # if request.method == 'POST':
-    #     user = User(request.form['correo'],request.form['contraseña'])
-    #     logged_user = ModelUser.login(db,user)
-    #     return logged_user
-    # else:
-    #     return jsonify({"Mensaje": "Datos invalidos"})
 
 #listar y editar datos de usuario
 @app.route('/listarCliente/<cedula>', methods=['GET'])
