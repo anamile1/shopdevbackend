@@ -101,7 +101,6 @@ def login():
         resp.status_code = 400
         return resp
 
-
 #listar y editar datos de usuario
 @app.route('/listarCliente/<cedula>', methods=['GET'])
 def listarCliente(cedula):
@@ -154,7 +153,6 @@ def nuevoProducto():
         return jsonify({"Mensaje": "Producto registrado"})
     except Exception as ex:
         return jsonify({"Mensaje": ex})
-
 
 @app.route('/upload', methods=['POST'])
 def uploadFile(url):
@@ -282,13 +280,92 @@ def filtrarBotella():
     except Exception as ex:
         return jsonify({"Mensaje": "Error"})
 
+#seccion de gestion del carrito = listar - seleccionar unidad - delete - edit - resgistrar - subTotal
+@app.route('/ingresarProductoCarrito', methods=['POST']) 
+def ingresarProductoCarrito():
+    #en esta ruta podre ingresar un producto mas al carrito
+    try:
+        cursor = db.connection.cursor()
+        sql="""INSERT INTO carrito(idProducto, cantidad, precioUni, imagen, nombre, descripcion, talla, idCliente, categoria) 
+        VALUES ('{}','{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')""".format(request.json['idProducto'], request.json['cantidad'],
+        request.json['precioUni'],request.json['imagen'],request.json['nombre'], request.json['descripcion'], request.json['talla'],
+        request.json['idCliente'], request.json['categoria'])
+        cursor.execute(sql)
+        db.connection.commit()
+        return jsonify({'mensaje':"Producto ingresado al carrito"})
+    except Exception as ex:
+        #mostrar  el error
+        return jsonify({'mensaje':str(ex)})
 
+@app.route('/listarCarritoCompras/<idCliente>', methods=['GET']) #lista
+def listarCarrito(idCliente):
+    #en esta ruta deplagare la informacion inicial que va a mostrar el carrito
+    try: 
+        cursor=db.connection.cursor()
+        sql="SELECT * FROM carrito WHERE idCliente ='{0}'".format(idCliente)
+        cursor.execute(sql)
+        datos=cursor.fetchall()
+        #confirmacion de consulta
+        return jsonify({'Lista de':datos, 'mensaje': "Carrito listado."})
+    except Exception as ex:
+        #mostrar el error
+        return jsonify({'mensaje':str(ex)})
 
+@app.route('/actualizaProductoCarrito', methods=['PUT'])
+def actualizar_cantidad():
+    #en esta funcion puedo actualizar la cantidad del producto del carrito
+    try:
+        cursor = db.connection.cursor()
+        sql = "UPDATE carrito SET cantidad = '{0}' WHERE id = '{1}'".format(request.json['cantidad'], request.json['id'])
+        cursor.execute(sql)
+        db.connection.commit()  # Confirma la acción de actualización.
+        return jsonify({'mensaje': "Producto actualizado."})
+    except Exception as ex:
+            return jsonify({'mensaje':str(ex)})
 
+@app.route('/eliminarProductoCarrito/<idCarrito>', methods=['DELETE'])
+def eliminarProductoCarrito(id):
+    try:
+        cursor = db.connection.cursor()
+        sql = "DELETE FROM carrito WHERE id ='{0}'".format(id)
+        cursor.execute(sql)
+        db.connection.commit()  # Confirma la acción de eliminación.
+        return jsonify({'mensaje': "Producto eliminado.", 'exito': True})
+    except Exception as ex:
+        return jsonify({'mensaje':str(ex)})
 
+@app.route('/listarPedidos', methods=["GET"])
+def listarPedidos():
+    try: 
+        cursor=db.connection.cursor()
+        sql="SELECT* FROM pedidos"
+        cursor.execute(sql)
+        date=cursor.fetchall()
+        if date:
+            return jsonify(date)
+        else:
+            return "none"
+    except Exception as ex:
+        #mostrar el error
+        return jsonify({'mensaje':str(ex)})
 
-
-
+@app.route('/guardarPedidos/<id>', methods=['POST', 'DELETE'])
+def enviarPedidos(id):
+    try:
+        cursor= db.connection.cursor()
+        if request.method == 'POST':
+        #enviar pedidos de la tabla carrito a tabla pedidos
+            sql="INSERT INTO pedidos(id_cliente, id_producto, total) SELECT idCliente, idProducto, sum(cantidad * precioUni) FROM carrito WHERE idCliente ='{0}'".format(id)
+            cursor.execute(sql)
+        else:
+        #limpiar datos de la tabla carrito
+            sql2="DELETE FROM carrito WHERE idCliente ='{0}'".format(id)
+            cursor.execute(sql2)
+        db.connection.commit()
+        return("funciona")
+        # return jsonify({'pedidos registrados exitosamente'})
+    except Exception as ex:
+        return jsonify({'mensaje':str(ex)})
 
 if __name__ == '__main__':
     app.config.from_object(config['development'])
