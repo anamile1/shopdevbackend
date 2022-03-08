@@ -5,7 +5,6 @@ import cloudinary.uploader
 from flask import Flask, jsonify, request, session
 from flask_mysqldb import MySQL
 from config import config
-from flask_login import logout_user
 from flask_cors import CORS
 from dotenv import load_dotenv
 from datetime import timedelta
@@ -56,19 +55,6 @@ def registroUsuario():
         return jsonify({"Mensaje": "Error"})
 
 #ruta inicio de sesión
-
-
-# @app.route('/')
-# def home():
-#     passhash = generate_password_hash('cairocoders')
-#     print(passhash)
-    # if 'correo' in session:
-    #     correo = session['correo']
-    #     return jsonify({'message' : 'You are already logged in', 'correo' : correo})
-    # else:
-    #     resp = jsonify({'message' : 'Unauthorized'})
-    #     resp.status_code = 401
-    #     return resp
 
 @app.route('/login', methods=['POST'])
 def login():
