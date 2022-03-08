@@ -76,14 +76,16 @@ def login():
             if check_password_hash(contraseña, _contraseña):
                 session['correo'] = correo
                 cursor.close()
-                return jsonify(row)
+                print(row)
+                consultaUsuario={'cedula':row[0], 'correo':row[1], 'contraseña':row[2], 'rol':row[3]}
+                return jsonify(consultaUsuario)
             else:
                 print(contraseña,_contraseña)
                 resp = jsonify({'Mensaje' : 'Contraseña no valida'})
                 resp.status_code = 400
                 return resp
     else:
-        resp = jsonify({'Mensaje' : 'Datos invalidos'})
+        resp = jsonify({'Mensaje' : 'row invalidos'})
         resp.status_code = 400
         return resp
 
