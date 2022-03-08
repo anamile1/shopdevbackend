@@ -323,6 +323,24 @@ def actualizar_cantidad():
     except Exception as ex:
             return jsonify({'mensaje':str(ex)})
 
+@app.route('/guardarPedidos/<id>', methods=['POST', 'DELETE'])
+def enviarPedidos(id):
+    try:
+        cursor= db.connection.cursor()
+        if request.method == 'POST':
+        #enviar pedidos de la tabla carrito a tabla pedidos
+            sql="INSERT INTO pedidos(id_cliente, id_producto, total) SELECT idCliente, idProducto, sum(cantidad * precioUni) FROM carrito WHERE idCliente ='{0}'".format(id)
+            cursor.execute(sql)
+        else:
+        #limpiar datos de la tabla carrito
+            sql2="DELETE FROM carrito WHERE idCliente ='{0}'".format(id)
+            cursor.execute(sql2)
+        db.connection.commit()
+        return("funciona")
+        # return jsonify({'pedidos registrados exitosamente'})
+    except Exception as ex:
+        return jsonify({'mensaje':str(ex)})
+
 @app.route('/eliminarProductoCarrito/<idCarrito>', methods=['DELETE'])
 def eliminarProductoCarrito(id):
     try:
@@ -349,23 +367,16 @@ def listarPedidos():
         #mostrar el error
         return jsonify({'mensaje':str(ex)})
 
-@app.route('/guardarPedidos/<id>', methods=['POST', 'DELETE'])
-def enviarPedidos(id):
+@app.route('/eliminarPedido/<id_pedido>',methods=['DELETE'])
+def eliminarPedido(id_pedido):
     try:
-        cursor= db.connection.cursor()
-        if request.method == 'POST':
-        #enviar pedidos de la tabla carrito a tabla pedidos
-            sql="INSERT INTO pedidos(id_cliente, id_producto, total) SELECT idCliente, idProducto, sum(cantidad * precioUni) FROM carrito WHERE idCliente ='{0}'".format(id)
-            cursor.execute(sql)
-        else:
-        #limpiar datos de la tabla carrito
-            sql2="DELETE FROM carrito WHERE idCliente ='{0}'".format(id)
-            cursor.execute(sql2)
+        cursor=db.connection.cursor()
+        sql = ('DELETE FROM pedidos where id_pedido = {0}'.format(id_pedido))
+        cursor.execute(sql)
         db.connection.commit()
-        return("funciona")
-        # return jsonify({'pedidos registrados exitosamente'})
+        return jsonify({"Mensaje": "Pedido eliminado"})
     except Exception as ex:
-        return jsonify({'mensaje':str(ex)})
+        return jsonify({"Mensaje": "Error"})
 
 if __name__ == '__main__':
     app.config.from_object(config['development'])
