@@ -66,17 +66,14 @@ def login():
         cursor.execute(sql)
         row = cursor.fetchone()
         if row is not None:
-            cedula = row[0]
             correo = row[1]
             contraseña = row[2]
-            rol = row[3]
         else:
             print("no existe el correo y/o la contraseña")
         if row:
             if check_password_hash(contraseña, _contraseña):
                 session['correo'] = correo
                 cursor.close()
-                print(row)
                 consultaUsuario={'cedula':row[0], 'correo':row[1], 'contraseña':row[2], 'rol':row[3]}
                 return jsonify(consultaUsuario)
             else:
@@ -131,11 +128,10 @@ def nuevoProducto():
         categoria = request.form['categoria']
         cantidad = request.form['cantidad']
         color = request.form['color']
-        tallaje = request.form['tallaje']
         cursor=db.connection.cursor()
         file = uploadFile(imagen)
-        sql = f"""INSERT INTO productos(imagenes,nombre,descripcion,talla,precio,categoria,cantidad,color,tallaje)
-        VALUES  ('{file}','{nombre}','{descripcion}','{talla}','{precio}','{categoria}','{cantidad}','{color}','{tallaje}')"""
+        sql = f"""INSERT INTO productos(imagenes,nombre,descripcion,talla,precio,categoria,cantidad,color)
+        VALUES  ('{file}','{nombre}','{descripcion}','{talla}','{precio}','{categoria}','{cantidad}','{color}')"""
         cursor.execute(sql)
         db.connection.commit()
         return jsonify({"Mensaje": "Producto registrado"})
@@ -160,30 +156,33 @@ def uploadFile(url):
     except Exception as ex:
         return jsonify({"Mensaje": "Error"})
 
-@app.route('/listarProductos/<codigo>', methods=['GET'])
+@app.route('/listarProducto/<string:codigo>', methods=['GET'])
 def listarProductos(codigo):
     try:
         cursor=db.connection.cursor()
         sql=  "SELECT * FROM productos where codigo='{}'".format(codigo)
         cursor.execute(sql)
-        row = cursor.fetchone()
-        return jsonify({"Mensaje": row})
+        row = cursor.fetchone()        
+        consultaProducto = []
+        consultaProducto.append({"codigo":row[0], "imagenes":row[1], "nombre":row[2], "descripcion":row[3], 
+        "talla":row[4], "precio":row[5], "categoria":row[6], "cantidad":row[7], "color":row[8]})
+        return jsonify({"Consulta Producto": consultaProducto})
     except Exception as ex:
         return jsonify({"Mensaje": "Error"})
 
 @app.route('/modificarProducto/<codigo>',methods=['PUT'])
 def modificarProducto(codigo):
-    try:
+    # try:
         cursor=db.connection.cursor()
         sql = f"""UPDATE productos SET imagenes = '{request.json['imagenes']}',nombre = '{request.json['nombre']}',
         descripcion = '{request.json['descripcion']}', talla = '{request.json['talla']}',precio = '{request.json['precio']}',
-        categoria = '{request.json['categoria']}',cantidad = '{request.json['cantidad']}',color = '{request.json['color']}',
-        tallaje = '{request.json['tallaje']}' WHERE codigo = '{codigo}'"""
+        categoria = '{request.json['categoria']}',cantidad = '{request.json['cantidad']}',color = '{request.json['color']}
+        WHERE codigo = '{codigo}'"""
         cursor.execute(sql)
         db.connection.commit()
         return jsonify({"Mensaje": "Producto modificado"})
-    except Exception as ex:
-        return jsonify({"Mensaje": "Error"})
+    # except Exception as ex:
+    #     return jsonify({"Mensaje": "Error"})
 
 @app.route('/eliminarProducto/<codigo>',methods=['DELETE'])
 def eliminarProducto(codigo):
@@ -203,9 +202,13 @@ def homeProductos():
         sql=  'SELECT * FROM productos'
         cursor.execute(sql)
         row = cursor.fetchall()
-        return jsonify({"Mensaje": row})
+        productos =[]
+        for i in row:
+            productos.append({"codigo":i[0], "imagenes":i[1], "nombre":i[2], "descripcion":i[3], 
+        "talla":i[4], "precio":i[5], "categoria":i[6], "cantidad":i[7], "color":i[8]})
+        return jsonify({"Mensaje": productos})
     except Exception as ex:
-        return jsonify({"Mensaje": "Error"})
+        return jsonify({"Lista de productos": "Error"})
 
 #FiltroS categoria
 @app.route('/filtrarCamiseta', methods=['GET'])
@@ -266,7 +269,7 @@ def filtrarBotella():
         db.connection.commit()
         return jsonify(row)
     except Exception as ex:
-        return jsonify({"Mensaje": "Error"})
+        return jsonify({"Mensaje": ex})
 
 #seccion de gestion del carrito = listar - seleccionar unidad - delete - edit - resgistrar - subTotal
 @app.route('/ingresarProductoCarrito', methods=['POST']) 
@@ -280,6 +283,7 @@ def ingresarProductoCarrito():
         request.json['idCliente'], request.json['categoria'])
         cursor.execute(sql)
         db.connection.commit()
+        ingresarProducto={'cedula':row[0], 'correo':row[1], 'contraseña':row[2], 'rol':row[3]}
         return jsonify({'mensaje':"Producto ingresado al carrito"})
     except Exception as ex:
         #mostrar  el error
@@ -292,9 +296,13 @@ def listarCarrito(idCliente):
         cursor=db.connection.cursor()
         sql="SELECT * FROM carrito WHERE idCliente ='{0}'".format(idCliente)
         cursor.execute(sql)
-        datos=cursor.fetchall()
-        #confirmacion de consulta
-        return jsonify({'Lista de':datos, 'mensaje': "Carrito listado."})
+        row=cursor.fetchall()
+        #confirmacion de consulta        
+        listarCarrito =[]
+        for i in row:
+            listarCarrito.append({"id":i[0], "idProducto":i[1], "cantidad":i[2], "precioUni":i[3], 
+            "imagen":i[4], "nombre":i[5], "descripcion":i[6], "talla":i[7], "idCliente":i[8], "categoria":i[9]})
+        return jsonify({'Lista de':listarCarrito, 'mensaje': "Carrito listado."})
     except Exception as ex:
         #mostrar el error
         return jsonify({'mensaje':str(ex)})
@@ -346,9 +354,12 @@ def listarPedidos():
         cursor=db.connection.cursor()
         sql="SELECT* FROM pedidos"
         cursor.execute(sql)
-        date=cursor.fetchall()
-        if date:
-            return jsonify(date)
+        row=cursor.fetchall()    
+        listarPedidos = []   
+        for i in row:
+            listarPedidos.append({"idPedido":i[0], "idCliente":i[1], "idProducto":i[2], "total":i[3], 
+            "estado":i[4]})
+            return jsonify(listarPedidos)
         else:
             return "none"
     except Exception as ex:
@@ -364,7 +375,7 @@ def eliminarPedido(id_pedido):
         db.connection.commit()
         return jsonify({"Mensaje": "Pedido eliminado"})
     except Exception as ex:
-        return jsonify({"Mensaje": "Error"})
+        return jsonify({"Mensaje": ex})
 
 if __name__ == '__main__':
     app.config.from_object(config['development'])
