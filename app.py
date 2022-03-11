@@ -87,16 +87,19 @@ def login():
         return resp
 
 #listar y editar datos de usuario
-@app.route('/listarCliente/<cedula>', methods=['GET'])
+@app.route('/listarCliente/<string:cedula>', methods=['GET'])
 def listarCliente(cedula):
     try:
         cursor=db.connection.cursor()
         sql=  "SELECT nombres,telefono,departamento,ciudad,direccion FROM clientes WHERE cedula ='{}'".format(cedula)
         cursor.execute(sql)
         row = cursor.fetchone()
-        return jsonify({"Mensaje": row})
+        consultaCliente = []
+        consultaCliente.append({"nombres":row[0], "telefono":row[1], "departamento":row[2], 
+        "ciudad":row[3], "direccion":row[4]})
+        return jsonify({"Mensaje": consultaCliente})
     except Exception as ex:
-        return jsonify({"Mensaje": "Error"})
+        return jsonify({"Mensaje": ex})
 
 @app.route('/modificarCliente/<cedula>',methods=['PUT'])
 def modificarCliente(cedula):
@@ -168,7 +171,7 @@ def listarProductos(codigo):
         "talla":row[4], "precio":row[5], "categoria":row[6], "cantidad":row[7], "color":row[8]})
         return jsonify({"Consulta Producto": consultaProducto})
     except Exception as ex:
-        return jsonify({"Mensaje": "Error"})
+        return jsonify({"Mensaje": ex})
 
 @app.route('/modificarProducto/<codigo>',methods=['PUT'])
 def modificarProducto(codigo):
