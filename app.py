@@ -140,8 +140,38 @@ def nuevoProducto():
         return jsonify({"Mensaje": "Producto registrado"})
     except Exception as ex:
         return jsonify({"Mensaje": ex})
+    
 
-@app.route('/upload', methods=['POST'])
+@app.route('/modificarProducto/<codigo>',methods=['PUT'])
+def modificarProducto(codigo):
+    # try:
+        print("Ingresaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+        imagen = request.files['imagen']
+        print("+++++++++++++++++++++++++++",imagen)
+        nombre = request.form['nombre']
+        descripcion = request.form['descripcion']
+        talla = request.form['talla']
+        precio = request.form['precio']
+        categoria = request.form['categoria']
+        cantidad = request.form['cantidad']
+        color = request.form['color']
+        cursor=db.connection.cursor()
+        file = uploadFile(imagen)
+        print('************',file)
+        cursor=db.connection.cursor()
+        sql = f"""UPDATE productos SET imagenes = '{file}',nombre = '{nombre}',
+        descripcion = '{descripcion}', talla = '{talla}',precio = '{precio}',
+        categoria = '{categoria}',cantidad = '{cantidad}',color = '{color}'
+        WHERE codigo = '{codigo}'"""
+        print(sql)
+        cursor.execute(sql)
+        db.connection.commit()
+        return jsonify({"Mensaje": "Producto modificado"})
+    # except Exception as ex:
+    #     return jsonify({"Mensaje": "Error"})
+
+
+@app.route('/upload', methods=['POST','PUT'])
 def uploadFile(url):
     try:
         app.logger.info('in upload route')
@@ -149,15 +179,14 @@ def uploadFile(url):
         api_key = os.getenv('API_KEY'),
         api_secret = os.getenv('API_SECRET'))
         uploadResult = None
-        if request.method == 'POST':
-            fileToUpload = url
-            app.logger.info('fileToUpload')
-            if fileToUpload:
-                uploadResult =cloudinary.uploader.upload(fileToUpload)
-                app.logger.info('uploadResult')
-                return uploadResult['url']
+        fileToUpload = url
+        app.logger.info('fileToUpload')
+        if fileToUpload:
+            uploadResult =cloudinary.uploader.upload(fileToUpload)
+            app.logger.info('uploadResult')
+            return uploadResult['url']
     except Exception as ex:
-        return jsonify({"Mensaje": "Error"})
+        return jsonify({"Mensaje": ex})
 
 @app.route('/listarProducto/<string:codigo>', methods=['GET'])
 def listarProductos(codigo):
@@ -172,20 +201,6 @@ def listarProductos(codigo):
         return jsonify({"Consulta Producto": consultaProducto})
     except Exception as ex:
         return jsonify({"Mensaje": ex})
-
-@app.route('/modificarProducto/<codigo>',methods=['PUT'])
-def modificarProducto(codigo):
-    # try:
-        cursor=db.connection.cursor()
-        sql = f"""UPDATE productos SET imagenes = '{request.json['imagenes']}',nombre = '{request.json['nombre']}',
-        descripcion = '{request.json['descripcion']}', talla = '{request.json['talla']}',precio = '{request.json['precio']}',
-        categoria = '{request.json['categoria']}',cantidad = '{request.json['cantidad']}',color = '{request.json['color']}
-        WHERE codigo = '{codigo}'"""
-        cursor.execute(sql)
-        db.connection.commit()
-        return jsonify({"Mensaje": "Producto modificado"})
-    # except Exception as ex:
-    #     return jsonify({"Mensaje": "Error"})
 
 @app.route('/eliminarProducto/<codigo>',methods=['DELETE'])
 def eliminarProducto(codigo):
