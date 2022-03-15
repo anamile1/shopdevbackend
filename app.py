@@ -144,10 +144,8 @@ def nuevoProducto():
 
 @app.route('/modificarProducto/<codigo>',methods=['PUT'])
 def modificarProducto(codigo):
-    # try:
-        print("Ingresaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+    try:
         imagen = request.files['imagen']
-        print("+++++++++++++++++++++++++++",imagen)
         nombre = request.form['nombre']
         descripcion = request.form['descripcion']
         talla = request.form['talla']
@@ -157,7 +155,6 @@ def modificarProducto(codigo):
         color = request.form['color']
         cursor=db.connection.cursor()
         file = uploadFile(imagen)
-        print('************',file)
         cursor=db.connection.cursor()
         sql = f"""UPDATE productos SET imagenes = '{file}',nombre = '{nombre}',
         descripcion = '{descripcion}', talla = '{talla}',precio = '{precio}',
@@ -167,8 +164,8 @@ def modificarProducto(codigo):
         cursor.execute(sql)
         db.connection.commit()
         return jsonify({"Mensaje": "Producto modificado"})
-    # except Exception as ex:
-    #     return jsonify({"Mensaje": "Error"})
+    except Exception as ex:
+        return jsonify({"Mensaje": ex})
 
 
 @app.route('/upload', methods=['POST','PUT'])
@@ -223,71 +220,28 @@ def homeProductos():
         productos =[]
         for i in row:
             productos.append({"codigo":i[0], "imagenes":i[1], "nombre":i[2], "descripcion":i[3], 
-        "talla":i[4], "precio":i[5], "categoria":i[6], "cantidad":i[7], "color":i[8]})
+            "talla":i[4], "precio":i[5], "categoria":i[6], "cantidad":i[7], "color":i[8]})
         return jsonify({"Mensaje": productos})
     except Exception as ex:
         return jsonify({"Lista de productos": "Error"})
 
 #FiltroS categoria
-@app.route('/filtrarCamiseta', methods=['GET'])
+@app.route('/filtrarCategoria', methods=['GET'])
 def filtrarCamiseta():
     try:
         cursor=db.connection.cursor()
-        sql = ("SELECT * FROM productos WHERE categoria = 'Camiseta'")
+        sql = ("SELECT * FROM productos WHERE categoria = 'Camiseta' or 'Buzo' or 'Gorra' or 'Vaso' or 'Botella'")
         cursor.execute(sql)
         row = cursor.fetchall()
         db.connection.commit()
-        return jsonify(row)
-    except Exception as ex:
-        return jsonify({"Mensaje": "Error"})
-
-@app.route('/filtrarBuzo', methods=['GET'])
-def filtrarBuzo():
-    try:
-        cursor=db.connection.cursor()
-        sql = ("SELECT * FROM productos WHERE categoria = 'Buzo'")
-        cursor.execute(sql)
-        row = cursor.fetchall()
-        db.connection.commit()
-        return jsonify(row)
-    except Exception as ex:
-        return jsonify({"Mensaje": "Error"})
-
-@app.route('/filtrarGorra', methods=['GET'])
-def filtrarGorra():
-    try:
-        cursor=db.connection.cursor()
-        sql = ("SELECT * FROM productos WHERE categoria = 'Gorra'")
-        cursor.execute(sql)
-        row = cursor.fetchall()
-        db.connection.commit()
-        return jsonify(row)
-    except Exception as ex:
-        return jsonify({"Mensaje": "Error"})
-
-@app.route('/filtrarVaso', methods=['GET'])
-def filtrarVaso():
-    try:
-        cursor=db.connection.cursor()
-        sql = ("SELECT * FROM productos WHERE categoria = 'Vaso'")
-        cursor.execute(sql)
-        row = cursor.fetchall()
-        db.connection.commit()
-        return jsonify(row)
-    except Exception as ex:
-        return jsonify({"Mensaje": "Error"})
-
-@app.route('/filtrarBotella', methods=['GET'])
-def filtrarBotella():
-    try:
-        cursor=db.connection.cursor()
-        sql = ("SELECT * FROM productos WHERE categoria = 'Botella'")
-        cursor.execute(sql)
-        row = cursor.fetchall()
-        db.connection.commit()
-        return jsonify(row)
+        filtro = []
+        for i in row:
+            filtro.append({"codigo":i[0], "imagenes":i[1], "nombre":i[2], "descripcion":i[3], 
+            "talla":i[4], "precio":i[5], "categoria":i[6], "cantidad":i[7], "color":i[8]})
+        return jsonify(filtro)
     except Exception as ex:
         return jsonify({"Mensaje": ex})
+
 
 #seccion de gestion del carrito = listar - seleccionar unidad - delete - edit - resgistrar - subTotal
 @app.route('/ingresarProductoCarrito', methods=['POST']) 
