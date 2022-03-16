@@ -210,7 +210,7 @@ def eliminarProducto(codigo):
 
 @app.route('/homeProductos', methods=['GET'])
 def homeProductos():
-    try:
+    # try:
         cursor=db.connection.cursor()
         sql=  'SELECT * FROM productos'
         cursor.execute(sql)
@@ -219,9 +219,9 @@ def homeProductos():
         for i in row:
             productos.append({"codigo":i[0], "imagenes":i[1], "nombre":i[2], "descripcion":i[3],
             "talla":i[4], "precio":i[5], "categoria":i[6], "cantidad":i[7], "color":i[8]})
-        return jsonify({"Mensaje": productos})
-    except Exception as ex:
-        return jsonify({"Lista de productos": "Error"})
+        return jsonify(productos)
+    # except Exception as ex:
+    #     return jsonify({"Lista de productos": "Error"})
 
 #FiltroS categoria
 @app.route('/filtrarCategoria', methods=['GET'])
@@ -374,6 +374,8 @@ def listarMetodoPago(codigo):
             return jsonify({'Datos metodo de pago':listarMetodoPago})
         except Exception as ex:
           return jsonify({'mensaje':str(ex)})
+
+
 
 if __name__ == '__main__':
     app.config.from_object(config['development'])
