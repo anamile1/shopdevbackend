@@ -111,12 +111,35 @@ def modificarCliente(cedula):
     db.connection.commit()
     return jsonify({"Mensaje": "Cliente modificado"})
 
-#cierre de sesión
-@app.route('/logout')
-def logout():
-    if 'correo' in session:
-        session.pop('correo', None)
-    return jsonify({"Mensaje": "Cerró sesión exitosamente"})
+
+@app.route('/listarDepartamentos', methods=['GET'])
+def listarDep():
+    try:
+        cursor=db.connection.cursor()
+        sql=  'SELECT * FROM departamentos'
+        cursor.execute(sql)
+        row = cursor.fetchall()
+        consultaDep= []
+        for i in row:
+            consultaDep.append({"codigo_dpto":i[0], "nombre":i[1]})
+        return jsonify(consultaDep)
+    except Exception as ex:
+        return jsonify({"Mensaje": ex})
+
+
+@app.route('/listarCiudades', methods=['GET'])
+def listarCiudad():
+    try:
+        cursor=db.connection.cursor()
+        sql=  'SELECT * FROM ciudades'
+        cursor.execute(sql)
+        row = cursor.fetchall()
+        consultaCiudad= []
+        for i in row:
+            consultaCiudad.append({"id_ciudad":i[0],"dpto":i[1], "codigo_ciudad":i[2], "nombre":i[3]})
+        return jsonify(consultaCiudad)
+    except Exception as ex:
+        return jsonify({"Mensaje": ex})
 
 #CRUD productos
 #agregar nuevo Producto
@@ -208,21 +231,6 @@ def eliminarProducto(codigo):
     except Exception as ex:
         return jsonify({"Mensaje": "Error"})
 
-@app.route('/homeProductos', methods=['GET'])
-def homeProductos():
-    # try:
-        cursor=db.connection.cursor()
-        sql=  'SELECT * FROM productos'
-        cursor.execute(sql)
-        row = cursor.fetchall()
-        productos =[]
-        for i in row:
-            productos.append({"codigo":i[0], "imagenes":i[1], "nombre":i[2], "descripcion":i[3],
-            "talla":i[4], "precio":i[5], "categoria":i[6], "cantidad":i[7], "color":i[8]})
-        return jsonify(productos)
-    # except Exception as ex:
-    #     return jsonify({"Lista de productos": "Error"})
-
 #FiltroS categoria
 @app.route('/filtrarCategoria', methods=['GET'])
 def filtrarCamiseta():
@@ -240,21 +248,48 @@ def filtrarCamiseta():
     except Exception as ex:
         return jsonify({"Mensaje": ex})
 
+@app.route('/homeProductos', methods=['GET'])
+def homeProductos():
+    try:
+        cursor=db.connection.cursor()
+        sql=  'SELECT * FROM productos'
+        cursor.execute(sql)
+        row = cursor.fetchall()
+        productos =[]
+        for i in row:
+            productos.append({"codigo":i[0], "imagenes":i[1], "nombre":i[2], "descripcion":i[3],
+            "talla":i[4], "precio":i[5], "categoria":i[6], "cantidad":i[7], "color":i[8]})
+        return jsonify(productos)
+    except Exception as ex:
+        return jsonify({"Lista de productos": ex})
+
 #seccion de gestion del carrito = listar - seleccionar unidad - delete - edit - resgistrar - subTotal
-@app.route('/ingresarProductoCarrito', methods=['POST'])
+@app.route('/ingresarProductoCarrito', methods=['POST','GET'])
 def ingresarProductoCarrito():
     #en esta ruta podre ingresar un producto mas al carrito
     try:
+        sub1 = int(request.json['cantidad'])*int(request.json['precioUni'])
         cursor = db.connection.cursor()
-        sql="""INSERT INTO carrito(idProducto, cantidad, precioUni, imagen, nombre, descripcion, talla, idCliente, categoria, subTotal, total)
-        VALUES ('{}','{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')""".format(request.json['idProducto'], request.json['cantidad'],
+        sql="""INSERT INTO carrito(idProducto, cantidad, precioUni, imagen, nombre, descripcion, talla, idCliente, categoria,subTotal) 
+        VALUES ('{}','{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}','{}')""".format(request.json['idProducto'], request.json['cantidad'],
         request.json['precioUni'],request.json['imagen'],request.json['nombre'], request.json['descripcion'], request.json['talla'],
-        request.json['idCliente'], request.json['categoria'], request.json['subTotal'], request.json['total'])
+        request.json['idCliente'], request.json['categoria'],sub1)
         cursor.execute(sql)
         db.connection.commit()
         return jsonify({'mensaje':"Producto ingresado al carrito"})
     except Exception as ex:
         #mostrar  el error
+        return jsonify({'mensaje':str(ex)})
+def totalSubTotal():
+    try: 
+        cursor=db.connection.cursor()
+        sql="SELECT sum(subTotal) FROM carrito WHERE idCliente='{0}'".format(request.json['idCliente'])
+        cursor.execute(sql)
+        datos=cursor.fetchall()
+        #confirmacion de consulta
+        return jsonify({'subTotal':datos, 'mensaje': "este es el subTotal."})
+    except Exception as ex:
+        #mostrar el error
         return jsonify({'mensaje':str(ex)})
 
 @app.route('/listarCarritoCompras/<idCliente>', methods=['GET']) #lista
@@ -286,6 +321,19 @@ def actualizar_cantidad():
         return jsonify({'mensaje': "Producto actualizado."})
     except Exception as ex:
             return jsonify({'mensaje':str(ex)})
+
+@app.route("/carritoSubTotal/<idCliente>", methods=["GET"])
+def totalSubTotal(idCliente):
+    try: 
+        cursor=db.connection.cursor()
+        sql="SELECT sum(subTotal) FROM carrito WHERE idCliente ='{0}'".format(idCliente)
+        cursor.execute(sql)
+        datos=cursor.fetchall()
+        #confirmacion de consulta
+        return jsonify(datos)
+    except Exception as ex:
+        #mostrar el error
+        return jsonify({'mensaje':str(ex)})
 
 @app.route('/guardarPedidos/<idCliente>', methods=['POST', 'DELETE'])
 def enviarPedidos(idCliente):
@@ -375,6 +423,30 @@ def listarMetodoPago(codigo):
         except Exception as ex:
           return jsonify({'mensaje':str(ex)})
 
+@app.route('/modificarMetodoPago/<codigo>', methods=['PUT'])
+def modificarMetodoPago(codigo):
+    try:
+        cursor = db.connection.cursor()
+        sql = f"""UPDATE metodo_pago SET nTarjeta = '{request.json['nTarjeta']}', mes = '{request.json['mes']}',
+        año = '{request.json['año']}', nombreTitular = '{request.json['nombreTitular']}', codTarjeta = '{request.json['codTarjeta']}',
+        tipoDocumento = '{request.json['tipoDocumento']}', documento = '{request.json['documento']}', banco = '{request.json['banco']}'
+        WHERE codigo = '{codigo}'"""
+        cursor.execute(sql)
+        db.connection.commit()
+        return jsonify({'mensaje': "Producto actualizado."})
+    except Exception as ex:
+            return jsonify({'mensaje':str(ex)})
+
+@app.route('/eliminarMetodoPago/<codigo>', methods = ['DELETE'])
+def eliminarMetodoPago(codigo):
+    try:
+        cursor=db.connection.cursor()
+        sql = ('DELETE FROM metodo_pago where codigo = {0}'.format(codigo))
+        cursor.execute(sql)
+        db.connection.commit()
+        return jsonify({"Mensaje": "Metodo de pago eliminado"})
+    except Exception as ex:
+        return jsonify({"Mensaje": ex})
 
 
 if __name__ == '__main__':
