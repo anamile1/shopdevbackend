@@ -69,7 +69,7 @@ def login():
             correo = row[1]
             contraseña = row[2]
         else:
-            print("no existe el correo y/o la contraseña")
+            return jsonify({'Mensaje': 'Correo no valido'})
         if row:
             if check_password_hash(contraseña, _contraseña):
                 session['correo'] = correo
@@ -81,17 +81,15 @@ def login():
                 resp = jsonify({'Mensaje' : 'Contraseña no valida'})
                 resp.status_code = 400
                 return resp
-    else:
-        resp = jsonify({'Mensaje' : 'row invalidos'})
-        resp.status_code = 400
-        return resp
+
 
 #listar y editar datos de usuario
 @app.route('/listarCliente/<string:cedula>', methods=['GET'])
 def listarCliente(cedula):
     try:
         cursor=db.connection.cursor()
-        sql=  "SELECT nombres,telefono,departamento,ciudad,direccion FROM clientes WHERE cedula ='{}'".format(cedula)
+        sql=  """SELECT nombres,telefono,departamento,ciudad,direccion 
+        FROM clientes WHERE cedula ='{}'""".format(cedula)
         cursor.execute(sql)
         row = cursor.fetchone()
         consultaCliente = []
