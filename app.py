@@ -9,12 +9,16 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from datetime import timedelta
 from werkzeug.security import check_password_hash, generate_password_hash
+# import smtplib
+from email.message import EmailMessage
+from flask_mail import Mail, Message
 
 load_dotenv()
 
 #Instancia
 app=Flask(__name__)
-app=Flask(__name__)
+# app=Flask(__name__)
+mail=Mail(app)
 CORS(app)
 
 # cors = CORS(app, resources={r"/*": {"origins": "*"}})
@@ -31,6 +35,12 @@ app.config["MYSQL_DB"]= 'boappj44csi2jovaxmpy'
 app.config["MYSQL_PORT"]= 3306
 
 
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT']= 465
+app.config['MAIL_USERNAME']= 'shoppdev.com@gmail.com'
+app.config['MAIL_PASSWORD']= 'Shopdev2022.'
+app.config['MAIL_USE_SSL']= True
+mail = Mail(app)
 #ruta raiz
 @app.route('/')
 def index():
@@ -214,7 +224,7 @@ def listarProductos(codigo):
         consultaProducto = []
         consultaProducto.append({"codigo":row[0], "imagenes":row[1], "nombre":row[2], "descripcion":row[3],
         "talla":row[4], "precio":row[5], "categoria":row[6], "cantidad":row[7], "color":row[8]})
-        return jsonify({"Consulta Producto": consultaProducto})
+        return jsonify(consultaProducto)
     except Exception as ex:
         return jsonify({"Mensaje": ex})
 
@@ -445,6 +455,17 @@ def eliminarMetodoPago(codigo):
         return jsonify({"Mensaje": "Metodo de pago eliminado"})
     except Exception as ex:
         return jsonify({"Mensaje": ex})
+
+
+@app.route('/correo', methods=['POST', 'GET'])
+def envioCorreo():
+    if request.method == 'POST':
+        correo= request.json['correo']
+        msg = Message(subject = 'Su pedido esta en proceso', sender='shoppdev.com@gmail.com', recipients=[correo], body = 'Holiiiii')
+        mail.send(msg)
+        return jsonify({"Mensaje":"correo enviado"})
+    else:
+        return jsonify({"Mensaje":'Error en envío de correo'})
 
 
 if __name__ == '__main__':
