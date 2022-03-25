@@ -457,15 +457,15 @@ def eliminarMetodoPago(codigo):
         return jsonify({"Mensaje": ex})
 
 
-@app.route('/correo', methods=['POST', 'GET'])
-def envioCorreo():
-    if request.method == 'POST':
-        correo= request.json['correo']
-        msg = Message(subject = 'Su pedido esta en proceso', sender='shoppdev.com@gmail.com', recipients=[correo], body = 'Holiiiii')
-        mail.send(msg)
-        return jsonify({"Mensaje":"correo enviado"})
-    else:
-        return jsonify({"Mensaje":'Error en envío de correo'})
+# @app.route('/correo', methods=['POST', 'GET'])
+# def envioCorreo():
+#     if request.method == 'POST':
+#         correo= request.json['correo']
+#         msg = Message(subject = 'Su pedido esta en proceso', sender='shoppdev.com@gmail.com', recipients=[correo], body = 'Holiiiii')
+#         mail.send(msg)
+#         return jsonify({"Mensaje":"correo enviado"})
+#     else:
+#         return jsonify({"Mensaje":'Error en envío de correo'})
 
 
 if __name__ == '__main__':
