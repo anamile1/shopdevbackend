@@ -9,9 +9,15 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from datetime import timedelta
 from werkzeug.security import check_password_hash, generate_password_hash
+import sendgrid
+import os
+from sendgrid.helpers.mail import *
 # # import smtplib
 # from email.message import EmailMessage
-# from flask_mail import Mail, Message
+from flask_mail import Mail, Message
+import os
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 load_dotenv()
 
@@ -41,6 +47,34 @@ app.config["MYSQL_PORT"]= 3306
 # app.config['MAIL_USE_SSL']= True
 # mail = Mail(app)
 #ruta raiz
+
+# sg = sendgrid.SendGridAPIClient(api_key=os.environ.get('SENDGRID'))
+# # from_email = Email("anamilenaariasgiraldo@gmail.com")
+# # to_email = To('cedioza@gmail.com')
+# subject = "Sending with SendGrid is Fun"
+# content = Content("text/plain", "and easy to do anywhere, even with Python")
+# mail = Mail(from_email, to_email, subject, content)
+# response = sg.client.mail.send.post(request_body=mail.get())
+# print(response.status_code)
+# print(response.body)
+# print(response.headers)
+
+
+def envioCorreo(email,nombre):
+    message = Mail(
+        from_email='anamilenaariasgiraldo@gmail.com',
+        to_emails=email,
+        subject='Confirmación de compra',
+        html_content=f'<strong>!Gracias {nombre} por tu compra¡</strong>')
+    try:
+        sg = sendgrid.SendGridAPIClient(api_key=os.environ.get('SENDGRID'))
+        response = sg.send(message)
+        print(response.status_code)
+        print(response.body)
+        print(response.headers)
+    except Exception as e:
+        print(e)
+
 @app.route('/')
 def index():
     return jsonify({"mensaje": "SHOPDEV"})
@@ -59,6 +93,7 @@ def registroUsuario():
         passhashRegistro)
         cursor.execute(sql)
         db.connection.commit()
+        envioCorreo(request.json['correo'])
         return jsonify({"Mensaje": "Usuario registrado"})
     except Exception as ex:
         return jsonify({"Mensaje": "Error"})
@@ -240,7 +275,7 @@ def eliminarProducto(codigo):
 
 #FiltroS categoria
 @app.route('/filtrarCategoria', methods=['GET'])
-def filtrarCamiseta():
+def filtrarCategoria():
     try:
         cursor=db.connection.cursor()
         sql = ("SELECT * FROM productos WHERE categoria = 'Camiseta' or 'Buzo' or 'Gorra' or 'Vaso' or 'Botella'")
@@ -455,17 +490,23 @@ def eliminarMetodoPago(codigo):
     except Exception as ex:
         return jsonify({"Mensaje": ex})
 
+@app.route('/finalizarCompra',methods=['POST'])
+def finalizarCompra(): 
+    correo = request.json['correo']
+    nombre = request.json['nombre']    
+    print(correo)
+    envioCorreo(correo,nombre)
+    return jsonify({'Mensaje': "compra finalizada"})
 
-# @app.route('/correo', methods=['POST', 'GET'])
-# def envioCorreo():
-#     if request.method == 'POST':
-#         correo= request.json['correo']
-#         msg = Message(subject = 'Su pedido esta en proceso', sender='shoppdev.com@gmail.com', recipients=[correo], body = 'Holiiiii')
-#         mail.send(msg)
-#         return jsonify({"Mensaje":"correo enviado"})
-#     else:
-#         return jsonify({"Mensaje":'Error en envío de correo'})
 
+
+
+
+
+
+#***************************************
+#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 key sendgrid
+#***************************************
 
 if __name__ == '__main__':
     app.config.from_object(config['development'])
