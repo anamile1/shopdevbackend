@@ -41,7 +41,6 @@ app.config["MYSQL_PORT"]= 3306
 
 
 
-
 def envioCorreo(email,nombre):
     message = Mail(
         from_email='anamilenaariasgiraldo@gmail.com',
@@ -121,7 +120,7 @@ def listarCliente(cedula):
         consultaCliente = []
         consultaCliente.append({"nombres":row[0], "telefono":row[1], "departamento":row[2],
         "ciudad":row[3], "direccion":row[4]})
-        return jsonify({"Mensaje": consultaCliente})
+        return jsonify(consultaCliente)
     except Exception as ex:
         return jsonify({"Mensaje": ex})
 
@@ -311,7 +310,7 @@ def totalSubTotal():
         cursor.execute(sql)
         datos=cursor.fetchall()
         #confirmacion de consulta
-        return jsonify({'subTotal':datos, 'mensaje': "este es el subTotal."})
+        return jsonify(datos)
     except Exception as ex:
         #mostrar el error
         return jsonify({'mensaje':str(ex)})
