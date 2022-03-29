@@ -40,24 +40,6 @@ app.config["MYSQL_DB"]= 'boappj44csi2jovaxmpy'
 app.config["MYSQL_PORT"]= 3306
 
 
-# app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-# app.config['MAIL_PORT']= 465
-# app.config['MAIL_USERNAME']= 'shoppdev.com@gmail.com'
-# app.config['MAIL_PASSWORD']= 'Shopdev2022.'
-# app.config['MAIL_USE_SSL']= True
-# mail = Mail(app)
-#ruta raiz
-
-# sg = sendgrid.SendGridAPIClient(api_key=os.environ.get('SENDGRID'))
-# # from_email = Email("anamilenaariasgiraldo@gmail.com")
-# # to_email = To('cedioza@gmail.com')
-# subject = "Sending with SendGrid is Fun"
-# content = Content("text/plain", "and easy to do anywhere, even with Python")
-# mail = Mail(from_email, to_email, subject, content)
-# response = sg.client.mail.send.post(request_body=mail.get())
-# print(response.status_code)
-# print(response.body)
-# print(response.headers)
 
 
 def envioCorreo(email,nombre):
@@ -504,9 +486,6 @@ def finalizarCompra():
 
 
 
-#***************************************
-#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 key sendgrid
-#***************************************
 
 if __name__ == '__main__':
     app.config.from_object(config['development'])
